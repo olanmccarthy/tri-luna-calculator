@@ -20,6 +20,8 @@ class Calculator:
         self.fullCombo = 0
         self.fullCombo2Nerv = 0
         self.smallWorldUsedForCombo = 0
+        self.sampleBadHands = []
+        self.sampleAmount = 0
 
         with open(sys.argv[1]) as f:
             deck_ids = f.read().splitlines()
@@ -34,7 +36,7 @@ class Calculator:
             info = json.loads(response.text)
             name = info["data"][0]["name"]
             deck.append(name)
-        self.deck  = deck
+        self.deck = deck
 
     def checkHand(self, hand):
         if "Lunalight Kaleido Chick" in hand:
@@ -61,12 +63,16 @@ class Calculator:
                     self.fullCombo += 1
                     self.fullCombo2Nerv += 1
                     self.smallWorldUsedForCombo += 1
-                    return 
+                    return
+        
         if "Tri-Brigade Fraktall" in hand:
             if "Luna Light Perfume" in hand:
                 self.fullCombo += 1
                 return
-            elif hand.count("Tri-Brigade Fraktall") >= 2 or "Tri-Brigade Nervall" in hand or "Tri-Brigade Kitt" in hand or "Lunalight Yellow Marten" in hand:
+            elif "Lunalight Tiger" in hand:
+                self.fullCombo += 1
+                return
+            elif hand.count("Tri-Brigade Fraktall") >= 2 or "Tri-Brigade Nervall" in hand or "Tri-Brigade Kitt" in hand or "Lunalight Yellow Marten" in hand or "Blackwing - Zephyros the Elite" in hand or "Raidraptor - Singing Lanius" in hand or "Raider's Wing" in hand:
                 self.fullCombo += 1
                 return
             elif "Small World" in hand:
@@ -79,6 +85,52 @@ class Calculator:
                     self.fullCombo2Nerv += 1
                     self.smallWorldUsedForCombo += 1
                     return
+                if "Tri-Brigade Kitt" in hand or "Tri-Brigade Fraktall" in hand or "Raider's Wing" in hand or "Raidraptor - Singing Lanius" in hand or "Tri-Brigade Nervall" in hand or "Ash Blossom & Joyous Spring" in hand:
+                    self.fullCombo += 1
+                    self.smallWorldUsedForCombo += 1
+                    return
+
+        if "Fire Formation - Tenki" in hand:
+            if "Luna Light Perfume" in hand:
+                self.fullCombo += 1
+                return
+            elif hand.count("Tri-Brigade Fraktall") >= 2 or "Tri-Brigade Nervall" in hand or "Tri-Brigade Kitt" in hand or "Lunalight Yellow Marten" in hand or "Blackwing - Zephyros the Elite" in hand or "Raidraptor - Singing Lanius" in hand or "Raider's Wing" in hand:
+                self.fullCombo += 1
+                return
+            elif "Small World" in hand:
+                if "Ash Blossom & Joyous Spring" in hand:
+                    self.fullCombo += 1
+                    self.smallWorldUsedForCombo += 1
+                    return
+                if "Ghost Ogre & Snow Rabbit" in hand:
+                    self.fullCombo += 1
+                    self.fullCombo2Nerv += 1
+                    self.smallWorldUsedForCombo += 1
+                    return
+            elif "Lunalight Tiger" in hand:
+                self.fullCombo += 1
+                return
+            elif "Lunalight Kaleido Chick" in hand:
+                self.fullCombo += 1
+                return
+            elif "Tri-Brigade Fraktall" in hand:
+                self.fullCombo += 1
+                return
+            elif "Foolish Burial Goods" in hand:
+                self.fullCombo += 1
+                return
+            elif "Small World" in hand:
+                # Check if targets for Small World are in hand instead
+                # TODO: check other hand traps if they work for this
+                if "Ash Blossom & Joyous Spring" in hand or "Armageddon Knight" in hand:
+                    self.fullCombo += 1
+                    self.smallWorldUsedForCombo += 1
+                    return
+                elif "Tri-Brigade Nervall" in hand:
+                    self.fullCombo += 1
+                    self.fullCombo2Nerv += 1
+                    self.smallWorldUsedForCombo += 1
+                    return
 
         if "Foolish Burial" in hand:
             if "Foolish Burial Goods" in hand:
@@ -87,13 +139,38 @@ class Calculator:
             elif "Luna Light Perfume" in hand:
                 self.fullCombo += 1
                 return
-        if "Foolish Burial Goods" in hand and "Lunalight Serenade Dance" in hand:
-            self.fullCombo +=1
-            return
+            elif "Monster Reborn" in hand:
+                # Might not be full board
+                self.fullCombo += 1
+                return
+            elif "Lunalight Tiger" in hand or "Fire Formation - Tenki" in hand:
+                self.fullCombo += 1
+                return
+            elif "Small World" in hand:
+                if "Tri-Brigade Kitt" in hand or "Tri-Brigade Fraktall" in hand or "Raider's Wing" in hand or "Raidraptor - Singing Lanius" in hand or "Tri-Brigade Nervall" in hand or "Ash Blossom & Joyous Spring" in hand:
+                    self.fullCombo += 1
+                    self.smallWorldUsedForCombo += 1
+                    return
+        if "Foolish Burial Goods" in hand:
+            if "Luna Light Perfume" in hand or "Lunalight Serenade Dance" in hand or "Lunalight Tiger" in hand:
+                self.fullCombo +=1
+                return
+            if "Tri-Brigade Kitt" in hand or "Tri-Brigade Nervall" in hand or "Tri-Brigade Fraktall" in hand:
+                self.fullCombo +=1
+                return
+            if "Small World" in hand:
+                if "Raider's Wing" in hand or "Raidraptor - Singing Lanius" in hand or "Ash Blossom & Joyous Spring" in hand or ("Ghost Ogre & Snow Rabbit" in hand and "Raider's Wing" not in hand):
+                    self.fullCombo += 1
+                    self.smallWorldUsedForCombo += 1
+                    return
         if "Armageddon Knight" in hand or "Reinforcement of the Army" in hand:
             if "Luna Light Perfume" in hand:
                 self.fullCombo += 1
                 return
+
+        if self.sampleAmount < 10:
+            self.sampleBadHands.append(hand)
+            self.sampleAmount += 1
             
 
     def run(self):
@@ -112,6 +189,10 @@ class Calculator:
         print((self.fullCombo2Nerv / self.loopAmount) * 100)
         print("Percent Boards finishing on full board only if you play Small World:")
         print((self.smallWorldUsedForCombo / self.loopAmount) * 100)
+        print("Sample hands that were not full combo:")
+        for i in self.sampleBadHands:
+            print(i)
+        print("If you find any of these hands are full combo please play it out and let me know")
 
 test = Calculator()
 test.run()
